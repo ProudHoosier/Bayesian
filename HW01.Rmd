@@ -1,0 +1,102 @@
+---
+title: "Bayesian Data Analysis HW01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I have executed these exercises on my own and written the answers in my own words.
+Signed: Shashi Shankar
+
+##1.
+
+For Model A, Given that p(x) = 1/4
+Probability value for each face is the same constant value 1/4. Hence all the values of the bottom face of the tetrahedral die are equally likely. Hence this model has no bias.
+
+P(x=1) = p(x=2) = p(x=3) = p(x=4) = 1/4
+
+For Model B, Given that p(x) = x/10
+
+p(x=1) = 1/10, p(x=2) = 2/10, p(x=3) = 3/10, p(x=4) = 4/10
+As we can see that the higher the face value x, the higher the probability. So, the face with higher value of x is more likely than the other faces. Hence, the model is biased towards the higher values of x.
+
+For Model x, Given that p(x) = 12/(25x)
+
+p(x=1) = 12/25, p(x=2) = 12/50, p(x=3) = 12/75, p(x=4) = 12/100
+As we can see that the more the face value, the lesser the probability. So, the face with low value of x is more likely than the other faces. Hence, the model is biased towards the lower values of x.
+
+##2.
+In the first case, we get each face value of the die 25 times. That means the data is most consistent with model A which has equal and constant probability value for the faces. So we change our beliefs such that model A becomes the most credible. We lower the credibility of model B and C but keep their credibility values same as neither of them are more consistent with the experiment data than the other.
+
+In the second case, the face with lower values are seen more often than the others.That means the data is most consistent with model C which is biased towards the lower value of the faces. So we change our beliefs such that model C becomes the most credible and model B becomes the least credible.
+
+## 3.
+
+```{r}
+setwd('C:\\Users\\hoosi\\Desktop\\BDA\\DBDA2Eprograms') #set the working directory to DBDA2E
+source('DBDA2E-utilities.R') #load utility code
+openGraph() #open a graphic window with default values
+x = seq(from = -3, to = 3, by = 0.01) #input vector
+y = x^3 #cubic funtion
+plot(x, y, type='b', col = 'dark red', main='cubic function plot')
+saveGraph(file="cubicplot", type="png") 
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+![cubicplot](cubicplot.png)
+##4A.
+```{r}
+df = read.csv("HGN.csv")
+df[1:3,]
+```
+
+##4B.
+```{r}
+head(df, 3)
+```
+##4C.
+```{r}
+class(df$Group)
+```
+
+##4D.
+```{r}
+factor(df$Group)
+```
+
+##4E.
+```{r}
+df$Hair
+df['Hair']
+df[1]
+```
+##5A.
+```{r}
+tempConvert <- function(F = 72){
+  (F-32)*(5/9)
+}
+```
+
+##5B.
+```{r}
+tempConvert()
+```
+##5C.
+```{r}
+tempConvert(98.6)
+```
+
+##5D.
+```{r}
+tempConvert(c( 32 , 72 , 98.6 , 212 ))
+```
+
+It produced vector as an output because the input argument is a vector and it performed the temperature conversion over each input in the vector.
+
+
+
+
+

@@ -1,0 +1,277 @@
+---
+title: "HW05.Rmd"
+author: "Shashi"
+date: "February 12, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I have executed these exercises on my own and written the answers in my own words. Signed: Shashi Shankar
+
+## 1.
+```{r}
+kappa = seq( 0 , 150 , length=1001 )
+source("DBDA2E-utilities.R")
+mean <- 1
+sd <- 10
+sr = gammaShRaFromMeanSD( mean=1 , sd=10 )
+mode = (sr$shape - 1)/sr$rate
+plot( kappa , dgamma( kappa , shape=sr$shape , rate=sr$rate ) , type="l")
+text(90,0.01, paste("shape = ", toString(sr$shape) , "rate =", toString(sr$rate), "mean =", toString(mean), "mode =", toString(mode), "sd =", toString(sd), sep = " " ))
+
+kappa = seq( 0 , 150 , length=1001 )
+source("DBDA2E-utilities.R")
+mode <- 18
+sd <- 40
+sr = gammaShRaFromModeSD( mode=18 , sd=40 )
+mean = sr$shape/sr$rate
+plot( kappa , dgamma( kappa , shape=sr$shape , rate=sr$rate ) , type="l")
+text(90,0.01, paste("shape = ", toString(sr$shape) , "rate =", toString(sr$rate), "mean =", toString(mean), "mode =", toString(mode), "sd =", toString(sd), sep = " " ))
+
+kappa = seq( 0 , 150 , length=1001 )
+source("DBDA2E-utilities.R")
+mode <- 42
+sd <- 20
+sr = gammaShRaFromModeSD( mode=42 , sd=20 )
+mean = sr$shape/sr$rate
+plot( kappa , dgamma( kappa , shape=sr$shape , rate=sr$rate ) , type="l")
+text(90,0.01, paste("shape = ", toString(sr$shape) , "rate =", toString(sr$rate), "mean =", toString(mean), "mode =", toString(mode), "sd =", toString(sd), sep = " " ))
+
+kappa = seq( 0 , 150 , length=1001 )
+source("DBDA2E-utilities.R")
+mean <- 50
+sd <- 50
+mode = (sr$shape - 1)/sr$rate
+sr = gammaShRaFromMeanSD( mean=50 , sd=50 )
+mean = sr$shape/sr$rate
+plot( kappa , dgamma( kappa , shape=sr$shape , rate=sr$rate ) , type="l")
+text(90,0.01, paste("shape = ", toString(sr$shape) , "rate =", toString(sr$rate), "mean =", toString(mean), "mode =", toString(mode), "sd =", toString(sd), sep = " " ))
+```
+
+## 2A. Proportion of head for coins 1,2,3 and 4 are 0.25, 0.50, 0.50, and 0.75 respectively.
+
+## 2B.
+```{r}
+s = c( 1,1,1,1, 2,2,2,2, 3,3,3,3, 4,4,4,4 ) # subject indicator for each datum
+y = c( 1,0,0,0, 1,1,0,0, 1,1,0,0, 1,1,1,0 ) # value of each datum
+theta = c( 0.25 , 0.50 , 0.50 , 0.75 )
+omega = 0.5
+kappa = 2.0
+# lik (below) is likelihood.
+lik = 1.0 # intialize
+for ( sIdx in unique(s) ) {
+# To understand the next line, unpack it from the inside out. Consider the first
+# time through the for loop, when sIdx is 1. What is s==sIdx? What is y[s==sIdx]?
+# What is theta[sIdx]? What is theta[sIdx]^y[s==sIdx]? etc.
+# What is this line computing in Eqn 9.10?
+lik = lik * prod( theta[sIdx]^y[s==sIdx] * (1-theta[sIdx])^(1-y[s==sIdx]) )
+}
+a = omega*(kappa-2)+1
+b = (1-omega)*(kappa-2)+1
+# What is the next line computing in Eqn 9.10?
+lik = lik * prod( theta^(a-1) * (1-theta)^(b-1) / beta(a,b) )
+
+show(lik)
+```
+Shape of the Beta distribution is flat. These parameter values do not constitute any reasonable shrinkage relative to the data proportions.
+
+## 2C.
+```{r}
+s = c( 1,1,1,1, 2,2,2,2, 3,3,3,3, 4,4,4,4 ) # subject indicator for each datum
+y = c( 1,0,0,0, 1,1,0,0, 1,1,0,0, 1,1,1,0 ) # value of each datum
+theta = c( 0.35 , 0.50 , 0.50 , 0.65 )
+omega = 0.5
+kappa = 20.0
+# lik (below) is likelihood.
+lik = 1.0 # intialize
+for ( sIdx in unique(s) ) {
+# To understand the next line, unpack it from the inside out. Consider the first
+# time through the for loop, when sIdx is 1. What is s==sIdx? What is y[s==sIdx]?
+# What is theta[sIdx]? What is theta[sIdx]^y[s==sIdx]? etc.
+# What is this line computing in Eqn 9.10?
+lik = lik * prod( theta[sIdx]^y[s==sIdx] * (1-theta[sIdx])^(1-y[s==sIdx]) )
+}
+a = omega*(kappa-2)+1
+b = (1-omega)*(kappa-2)+1
+# What is the next line computing in Eqn 9.10?
+lik = lik * prod( theta^(a-1) * (1-theta)^(b-1) / beta(a,b) )
+
+show(lik)
+```
+Shape of the Beta distribution is peaked.Parameter values in part c yield a higher likelihood value for the data.
+When kappa is larger, the individual theta values must be shrunken more.
+
+## 3.
+
+
+```{r}
+source("Jags-Ydich-XnomSsubj-MbinomBetaOmegaKappa-Example.R")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r pressure, echo=FALSE}
+source("Jags-Ydich-XnomSsubj-MbinomBetaOmegaKappa-Example.R")
+```
+![](Exercise3A-PostOmega.png)
+
+![](Exercise3A-PostTheta.png)
+![](Exercise3B-PostOmega.png)
+![](Exercise3B-PostTheta.png)
+
+kappa does not get too small When the prior has mode=1. But when the prior has mean=1, kappa has a very high probability of being very small. The two different thetas can have opposite extremes when kappa is very small in the case where prior has mean = 1.
+
+
+
+## 3B. I think the prior with mean=1 is more appropriate as it sets uniform prior for the individual thetas and sets a broad prior on the differences of thetas.
+
+## 4.
+```{r}
+# Generate the data frame:
+# N.B.: The functions below expect the data to be a data frame,
+# with one component being a vector of integer 0,1 values,
+# and one component being a factor of subject identifiers.
+headsTails = c( rep(1,30),rep(0,100-30),
+rep(1,40),rep(0,100-40),
+rep(1,50),rep(0,100-50),
+rep(1,60),rep(0,100-60),
+rep(1,70),rep(0,100-70) )
+subjID = factor( c( rep("A",100),
+rep("B",100),
+rep("C",100),
+rep("D",100),
+rep("E",100) ) )
+myData = data.frame( y=headsTails , s=subjID )
+#-------------------------------------------------------------------------------
+# Load the relevant model into R's working memory:
+source("Jags-Ydich-XnomSsubj-MbernBetaOmegaKappa.R")
+fileNameRoot = "Exercise4-"
+graphFileType = "png"
+# Generate the MCMC chain:
+mcmcCoda = genMCMC( data=myData , sName="s" , yName="y" ,
+numSavedSteps=10000 , saveName=fileNameRoot , thinSteps=10 )
+# Display diagnostics of chain, for specified parameters:
+parameterNames = varnames(mcmcCoda) # get all parameter names for reference
+for ( parName in parameterNames[c(1:3,length(parameterNames))] ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName ,
+saveName=fileNameRoot , saveType=graphFileType )
+}
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=0.5 ,
+diffIdVec=c(1,2,3,4,5), compValDiff=0.0,
+saveName=fileNameRoot )
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , sName="s" , yName="y" ,
+compVal=0.5 , #rope=c(0.45,0.55) ,
+diffIdVec=c(1,2,3,4,5), compValDiff=0.0, #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot , saveType=graphFileType )
+```
+![](Exercise4-PostOmega.png)
+
+
+![](Exercise4-PostTheta.png)
+
+The posterior showed very small shrinkage when prior on kappa was set with mean=1 as the prior emphasizes small kappa values. But, There is significant shrinkage, when prior uniform was used. Bayesian posterior distribution provides more comprehensive and explicit description of the uncertainty of the estimate for all the parameters compared to MLE.
+
+## 5A.
+```{r}
+z=3 
+N=9 
+omega1 = 0.25 
+omega2 = 1 - omega1 
+kappa = 12 
+p1 = 0.5
+p2 = 1 - p1
+a1 = omega1*(kappa - 2) + 1
+b1 = (1 - omega1) * (kappa - 2) + 1
+pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) }
+a2 = omega2*(kappa - 2) + 1
+b2 = (1 - omega2) * (kappa - 2) + 1
+Bayes_factor = (pD(z,N, a1, b1) * p1)/(pD(z,N, a2, b2) * p2)
+post_tails = Bayes_factor/ (1 + Bayes_factor)
+post_heads = 1 - post_tails
+
+show(Bayes_factor)
+show(post_tails)
+show(post_heads)
+
+```
+The posterior is exactly the opposite to the example given in the book. The posterior odds are 0.213 against the
+head-biased factory, which is to say 4.68 (i.e., 1/0.213) in favor of the tail-biased factory
+
+## 5B.
+```{r}
+z=6 
+N=9 
+omega1 = 0.25 
+omega2 = 1 - omega1 
+kappa = 120 
+p1 = 0.5
+p2 = 1 - p1
+a1 = omega1*(kappa - 2) + 1
+b1 = (1 - omega1) * (kappa - 2) + 1
+pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) }
+a2 = omega2*(kappa - 2) + 1
+b2 = (1 - omega2) * (kappa - 2) + 1
+Bayes_factor = (pD(z,N, a1, b1) * p1)/(pD(z,N, a2, b2) * p2)
+post_tails = Bayes_factor/ (1 + Bayes_factor)
+post_heads = 1 - post_tails
+
+show(Bayes_factor)
+show(post_tails)
+show(post_heads)
+```
+The posterior is 0.05 in favor of the tail-biased factory.
+
+## 5C.
+```{r}
+z=6 
+N=9 
+omega1 = 0.025 
+omega2 = 1 - omega1 
+kappa = 120 
+p1 = 0.5
+p2 = 1 - p1
+a1 = omega1*(kappa - 2) + 1
+b1 = (1 - omega1) * (kappa - 2) + 1
+pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) }
+a2 = omega2*(kappa - 2) + 1
+b2 = (1 - omega2) * (kappa - 2) + 1
+Bayes_factor = (pD(z,N, a1, b1) * p1)/(pD(z,N, a2, b2) * p2)
+post_tails = Bayes_factor/ (1 + Bayes_factor)
+post_heads = 1 - post_tails
+
+show(Bayes_factor)
+show(post_tails)
+show(post_heads)
+```
+The posterior is 0.0002 in favor of the tail-biased factory ie Factory is head biased.
+
+## 5D.
+```{r}
+z=6 
+N=9 
+omega1 = 0.025 
+omega2 = 1 - omega1 
+kappa = 120 
+p1 = 0.05
+p2 = 1 - p1
+a1 = omega1*(kappa - 2) + 1
+b1 = (1 - omega1) * (kappa - 2) + 1
+pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) }
+a2 = omega2*(kappa - 2) + 1
+b2 = (1 - omega2) * (kappa - 2) + 1
+Bayes_factor = (pD(z,N, a1, b1) * p1)/(pD(z,N, a2, b2) * p2)
+post_tails = Bayes_factor/ (1 + Bayes_factor)
+post_heads = 1 - post_tails
+
+show(Bayes_factor)
+show(post_tails)
+show(post_heads)
+```
+The posterior is negligibly in favor of the tail-biased factory ie Factory is higly head biased.

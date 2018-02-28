@@ -1,0 +1,474 @@
+---
+title: "HW04"
+author: "Shashi"
+date: "February 4, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I have executed these exercises on my own and written the answers in my own words. Signed: Shashi Shankar
+
+## 1A.
+
+```{r}
+# Creating Data set
+y = c( rep(1,48),rep(0,8) )
+s = c( rep("A", 48) , rep("B", 8) )
+write.csv( data.frame(y=y,s=s) , file="1A.csv" , row.names=FALSE )
+
+# Below is just the essential lines of Jags-Ydich-XnomSsubj-MbernBeta-Example.R
+# with the data file changed:
+graphics.off()
+rm(list=ls(all=TRUE))
+fileNameRoot="1A" # for output filenames
+source("DBDA2E-utilities.R")
+# Load The data from the file: 
+myData = read.csv("1A.csv")
+# Load the relevant model into R's working memory:
+source("Jags-Ydich-XnomSsubj-MbernBeta.R")
+# Generate the MCMC chain:
+mcmcCoda = genMCMC( data=myData , numSavedSteps=50000 , saveName=fileNameRoot )
+parameterNames = varnames(mcmcCoda) # get all parameter names
+for ( parName in parameterNames ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName )
+}
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+
+```
+![Diag theta1](1ADiagtheta[1].png)
+![Posterior](1APost.jpg)
+
+It is evident from the posterior distribution that 95% HDI of theta1 is between 0.9 and 0.999 whereas for theta2 it's between 0 t0 0.366. The scatterplot between them also indicates the region where theta1 values are very high and and theta2 values are low. 
+
+## 1B.
+
+```{r}
+# Creating Data set
+y = c( rep(1,48),rep(0,8) )
+s = c( rep("H", 48) , rep("T", 8) )
+write.csv( data.frame(y=y,s=s) , file="1B.csv" , row.names=FALSE )
+
+# Below is just the essential lines of Jags-Ydich-XnomSsubj-MbernBeta-Example.R
+# with the data file changed:
+graphics.off()
+rm(list=ls(all=TRUE))
+fileNameRoot="1B" # for output filenames
+source("DBDA2E-utilities.R")
+# Load The data from the file: 
+myData = read.csv("1B.csv")
+# Load the relevant model into R's working memory:
+source("Jags-Ydich-XnomSsubj-MbernBeta.R")
+# Generate the MCMC chain:
+mcmcCoda = genMCMC( data=myData , numSavedSteps=50000 , saveName=fileNameRoot )
+parameterNames = varnames(mcmcCoda) # get all parameter names
+for ( parName in parameterNames ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName )
+}
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+
+openGraph()
+plotPost( mcmcCoda[,"theta[1]"] , xlim=c(0,1) )
+a = 2 ; b = 2 # constants from prior in Jags-Ydich-XnomSsubj-MbernBeta.R
+H = 48 ; T = 8 # heads and tails from your data
+thetaGrid=seq(0,1,length=201)
+lines( thetaGrid , dbeta( thetaGrid , a+H , b+T ) )
+
+```
+
+H and T are the number of heads and number of tails in the data. Using z and N notation, H is z and T is N-z. We are plotting a beta distribution with shape constants of a+H and b+T, Because when we start with a beta(a,b) prior we end up with a beta(a+z,b+N-z) posterior.
+
+![](1BPost.jpg)
+
+a and b (both 2) were determined from the model specification in low level script file dbeta(2,2). Heads and tails are 48 and 8 respectively.
+
+The lines( ) function adds information to a graph. It can not produce a graph on its own. Usually it follows a plot(x, y) command that produces a graph.
+
+The superimposed curve is closely matching the histogram.
+
+## 2.
+```{r}
+source("Jags-Ydich-XnomSsubj-Mbernbeta-Example.R")
+```
+
+The summary results display the Mean, Median, Mode of the MCMC chain for either the parameter or parameter difference. Each row corresponds to the parameter or parameter difference indicated in the left-most column. ESS is the effective sample size, which is the chain length divided by the autocorrelation. HDImass indicates the probability mass of highest density interval (default 95 %). HDIlow is the lower limit of the HDI, and HDIhigh is the upper limit. Comparison value (CompVal) for single-parameter decisions. It's value is shown as NA because it was commented in the code. The next column indicates the percentage of the posterior that is greater than the comparison value (PcntGtCompVal). Next are the columns for the ROPE (region of practical equivalence), which show the specifications in the arguments. The last three columns indicate the percentage of the posterior distribution that is less than the ROPE lower limit, within the ROPE limits, and greater than the ROPE upper limit. 
+
+## 3.
+
+fileNameRoot = "Jags-Ydich-XnomSsubj-MbernBeta-" 
+graphFileType = "eps"
+fileNameRoot specifies the beginning of the filenames for saved information, and graphFileType specifies the graphics format for the saved graphs.
+
+# Generate the MCMC chain: mcmcCoda = genMCMC( data=myData , numSavedSteps=50000 , saveName=fileNameRoot )
+
+genMCMC returns mcmccoda object containing information about every step. The MCMC chain is saved in a file named <fileNameRoot-Mcmc.Rdata file. 
+
+# Display diagnostics of chain, for specified parameters:
+parameterNames = varnames(mcmcCoda) # get all parameter names
+for ( parName in parameterNames ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName , saveName=fileNameRoot , saveType=graphFileType )
+}
+
+The above line gets all the parameters from the mcmccoda object and saves the diagnostic graphs for each parameter.
+file names are the fileNameRoot with Diag<parameter> appended.
+
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=0.5 , rope=c(0.45,0.55) ,
+compValDiff=0.0 , ropeDiff = c(-0.05,0.05) , saveName=fileNameRoot )
+
+The summary information is saved in a file named Jags-Ydich-XnomSsubj-MbernBeta-SummaryInfo.csv. The file name is the fileNameRoot with SummaryInfo appended.
+
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) , saveName=fileNameRoot , saveType=graphFileType )
+
+The graph of the posterior distribution is saved in a file named Jags-Ydich-XnomSsubj-MbernBeta-Post.eps
+file name is the fileNameRoot with Post appended.
+
+Note: .eps is a file format optimized for creating large LaTeX files.
+
+
+## 4A.
+
+To reproduce figure 8.7 we need to run JAGS without the data included. So, the y values must be omitted, but all the other constants must be retained in order to define the structure of the model, such as the number of (absent)
+data values and the number of (absent) subjects etc. 
+
+dataList = list(
+# y = y ,
+s = s ,
+Ntotal = Ntotal ,
+Nsubj = Nsubj
+)
+
+
+```{r}
+source("Jags-Ydich-XnomSsubj-Mbernbeta-Example.R")
+```
+
+![Posterior](4APost.png)
+
+The graph of the "posterior" looks like that in Figure 8.7 from the book.
+## 4B.
+
+Changed the prior specification to dbeta(1, 1)
+# THE MODEL.
+  modelString = "
+  model {
+    for ( i in 1:Ntotal ) {
+      y[i] ~ dbern( theta[s[i]] )
+    }
+    for ( sIdx in 1:Nsubj ) {
+      theta[sIdx] ~ dbeta( 1 , 1 ) # N.B.: 2,2 prior; change as appropriate.
+    }
+  }
+  " # close quote for modelString
+  writeLines( modelString , con="TEMPmodel.txt" )
+  
+  
+```{r}
+source("Jags-Ydich-XnomSsubj-Mbernbeta-Example.R")
+```
+
+![Posterior](4BPost.png)
+
+The distributions on theta[1] and theta[2] look uniform, because that is a dbeta(1,1) distribution and we have commented the data y in the low level script.
+However, the prior distribution on theta[1]-theta[2] is triangular. There are a lot of points along the diagonal, but the number of points drops off linearly toward the corners. It shows that uniform priors on theta[1] and theta[2] do not imply a uniform prior on the difference of parameters.
+
+
+## 4C.
+
+Changed the prior specification to dbeta(0.5, 0.5)
+
+```{r}
+source("Jags-Ydich-XnomSsubj-Mbernbeta-Example.R")
+```
+
+![Posterior](4CPost.png)
+
+The individual parameters have dbeta(0.5,0.5) marginal distributions. The scatter plot has higher density toward the corners. It shows that a prior on individual parameters may have unforeseen implications for the prior on the difference of parameters.
+
+## 5A.
+
+```{r}
+# Creating Data set
+y = c( rep(1,48),rep(0,8) )
+s = c( rep("A", 48) , rep("B", 8) )
+write.csv( data.frame(y=y,s=s) , file="1A.csv" , row.names=FALSE )
+
+# Below is just the essential lines of Jags-Ydich-XnomSsubj-MbernBeta-Example.R
+# with the data file changed:
+graphics.off()
+rm(list=ls(all=TRUE))
+fileNameRoot="5A_2000" # for output filenames
+source("DBDA2E-utilities.R")
+# Load The data from the file: 
+myData = read.csv("1A.csv")
+# Load the relevant model into R's working memory:
+source("Jags-Ydich-XnomSsubj-MbernBeta.R")
+# Generate the MCMC chain:
+mcmcCoda = genMCMC( data=myData , numSavedSteps=2000 , saveName=fileNameRoot )
+parameterNames = varnames(mcmcCoda) # get all parameter names
+for ( parName in parameterNames ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName )
+}
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+```
+
+With 2000 steps the diagnostic plot for autocoreelation is not very steady. The chains are not very well superimposed on each other.
+
+```{r}
+# Creating Data set
+y = c( rep(1,48),rep(0,8) )
+s = c( rep("A", 48) , rep("B", 8) )
+write.csv( data.frame(y=y,s=s) , file="1A.csv" , row.names=FALSE )
+
+# Below is just the essential lines of Jags-Ydich-XnomSsubj-MbernBeta-Example.R
+# with the data file changed:
+graphics.off()
+rm(list=ls(all=TRUE))
+fileNameRoot="5A_50000" # for output filenames
+source("DBDA2E-utilities.R")
+# Load The data from the file: 
+myData = read.csv("1A.csv")
+# Load the relevant model into R's working memory:
+source("Jags-Ydich-XnomSsubj-MbernBeta.R")
+# Generate the MCMC chain:
+mcmcCoda = genMCMC( data=myData , numSavedSteps=50000 , saveName=fileNameRoot )
+parameterNames = varnames(mcmcCoda) # get all parameter names
+for ( parName in parameterNames ) {
+diagMCMC( codaObject=mcmcCoda , parName=parName )
+}
+# Get summary statistics of chain:
+summaryInfo = smryMCMC( mcmcCoda , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+# Display posterior information:
+plotMCMC( mcmcCoda , data=myData , compVal=NULL , #rope=c(0.45,0.55) ,
+compValDiff=0.0 , #ropeDiff = c(-0.05,0.05) ,
+saveName=fileNameRoot )
+
+```
+
+With 50000 steps the diagnostic plot for autocoreelation for all the chains are close to 0. The chains are very well superimposed on each other.
+
+## 5B.
+```{r}
+# Jags-Ydich-XnomSsubj-Mbernbeta.R 
+# Accompanies the book:
+#   Kruschke, J. K. (2014). Doing Bayesian Data Analysis: 
+#   A Tutorial with R, JAGS, and Stan. 2nd Edition. Academic Press / Elsevier.
+source("DBDA2E-utilities.R")
+#===============================================================================
+
+genMCMC = function( data , numSavedSteps=50000 , saveName=NULL ) { 
+  require(rjags)
+  #-----------------------------------------------------------------------------
+  # THE DATA.
+  # N.B.: This function expects the data to be a data frame, 
+  # with one component named y being a vector of integer 0,1 values,
+  # and one component named s being a factor of subject identifiers.
+  y = data$y
+  s = as.numeric(data$s) # converts character to consecutive integer levels
+  # Do some checking that data make sense:
+  if ( any( y!=0 & y!=1 ) ) { stop("All y values must be 0 or 1.") }
+  Ntotal = length(y)
+  Nsubj = length(unique(s))
+  # Specify the data in a list, for later shipment to JAGS:
+  dataList = list(
+    y = y ,
+    s = s ,
+    Ntotal = Ntotal ,
+    Nsubj = Nsubj
+  )
+  #-----------------------------------------------------------------------------
+  # THE MODEL.
+  modelString = "
+  model {
+    for ( i in 1:Ntotal ) {
+      y[i] ~ dbern( theta[s[i]] )
+    }
+    for ( sIdx in 1:Nsubj ) {
+      theta[sIdx] ~ dbeta( 0.5 , 0.5 ) # N.B.: 2,2 prior; change as appropriate.
+    }
+  }
+  " # close quote for modelString
+  writeLines( modelString , con="TEMPmodel.txt" )
+  #-----------------------------------------------------------------------------
+  # INTIALIZE THE CHAINS.
+  # Initial values of MCMC chains based on data:
+  # Option 1: Use single initial value for all chains:
+  #  thetaInit = rep(0,Nsubj)
+  #  for ( sIdx in 1:Nsubj ) { # for each subject
+  #    includeRows = ( s == sIdx ) # identify rows of this subject
+  #    yThisSubj = y[includeRows]  # extract data of this subject
+  #    thetaInit[sIdx] = sum(yThisSubj)/length(yThisSubj) # proportion
+  #  }
+  #  initsList = list( theta=thetaInit )
+  # Option 2: Use function that generates random values near MLE:
+  initsList = function() {
+    thetaInit = rep(0,Nsubj)
+    for ( sIdx in 1:Nsubj ) { # for each subject
+      includeRows = ( s == sIdx ) # identify rows of this subject
+      yThisSubj = y[includeRows]  # extract data of this subject
+      resampledY = sample( yThisSubj , replace=TRUE ) # resample
+      thetaInit[sIdx] = sum(resampledY)/length(resampledY) 
+    }
+    thetaInit = 0.001+0.998*thetaInit # keep away from 0,1
+    return( list( theta=thetaInit ) )
+  }
+  #-----------------------------------------------------------------------------
+  # RUN THE CHAINS
+  parameters = c( "theta")     # The parameters to be monitored
+  adaptSteps = 500             # Number of steps to adapt the samplers
+  burnInSteps = 500            # Number of steps to burn-in the chains
+  nChains = 4                  # nChains should be 2 or more for diagnostics 
+  thinSteps = 1
+  nIter = ceiling( ( numSavedSteps * thinSteps ) / nChains )
+  # Create, initialize, and adapt the model:
+  jagsModel = jags.model( "TEMPmodel.txt" , data=dataList , #inits=initsList , 
+                          n.chains=nChains , n.adapt=adaptSteps )
+  # Burn-in:
+  cat( "Burning in the MCMC chain...\n" )
+  update( jagsModel , n.iter=burnInSteps )
+  # The saved MCMC chain:
+  cat( "Sampling final MCMC chain...\n" )
+  codaSamples = coda.samples( jagsModel , variable.names=parameters , 
+                              n.iter=nIter , thin=thinSteps )
+  # resulting codaSamples object has these indices: 
+  #   codaSamples[[ chainIdx ]][ stepIdx , paramIdx ]
+  if ( !is.null(saveName) ) {
+    save( codaSamples , file=paste(saveName,"Mcmc.Rdata",sep="") )
+  }
+  return( codaSamples )
+} # end function
+
+#===============================================================================
+
+smryMCMC = function(  codaSamples , compVal=0.5 , rope=NULL , 
+                      compValDiff=0.0 , ropeDiff=NULL , saveName=NULL ) {
+  mcmcMat = as.matrix(codaSamples,chains=TRUE)
+  Ntheta = length(grep("theta",colnames(mcmcMat)))
+  summaryInfo = NULL
+  rowIdx = 0
+  for ( tIdx in 1:Ntheta ) {
+    parName = paste0("theta[",tIdx,"]")
+    summaryInfo = rbind( summaryInfo , 
+      summarizePost( mcmcMat[,parName] , compVal=compVal , ROPE=rope ) )
+    rowIdx = rowIdx+1
+    rownames(summaryInfo)[rowIdx] = parName
+  }
+  for ( t1Idx in 1:(Ntheta-1) ) {
+    for ( t2Idx in (t1Idx+1):Ntheta ) {
+      parName1 = paste0("theta[",t1Idx,"]")
+      parName2 = paste0("theta[",t2Idx,"]")
+      summaryInfo = rbind( summaryInfo , 
+        summarizePost( mcmcMat[,parName1]-mcmcMat[,parName2] ,
+                       compVal=compValDiff , ROPE=ropeDiff ) )
+      rowIdx = rowIdx+1
+      rownames(summaryInfo)[rowIdx] = paste0(parName1,"-",parName2)
+    }
+  }
+  if ( !is.null(saveName) ) {
+    write.csv( summaryInfo , file=paste(saveName,"SummaryInfo.csv",sep="") )
+  }
+  show( summaryInfo )
+  return( summaryInfo )
+}
+
+#===============================================================================
+
+plotMCMC = function( codaSamples , data , compVal=0.5 , rope=NULL , 
+                     compValDiff=0.0 , ropeDiff=NULL , 
+                     saveName=NULL , saveType="jpg" ) {
+  #-----------------------------------------------------------------------------
+  # N.B.: This function expects the data to be a data frame, 
+  # with one component named y being a vector of integer 0,1 values,
+  # and one component named s being a factor of subject identifiers.
+  y = data$y
+  s = as.numeric(data$s) # converts character to consecutive integer levels
+  # Now plot the posterior:
+  mcmcMat = as.matrix(codaSamples,chains=TRUE)
+  chainLength = NROW( mcmcMat )
+  Ntheta = length(grep("theta",colnames(mcmcMat)))
+  openGraph(width=2.5*Ntheta,height=2.0*Ntheta)
+  par( mfrow=c(Ntheta,Ntheta) )
+  for ( t1Idx in 1:(Ntheta) ) {
+    for ( t2Idx in (1):Ntheta ) {
+      parName1 = paste0("theta[",t1Idx,"]")
+      parName2 = paste0("theta[",t2Idx,"]")
+      if ( t1Idx > t2Idx) {  
+        # plot.new() # empty plot, advance to next
+        par( mar=c(3.5,3.5,1,1) , mgp=c(2.0,0.7,0) )
+        nToPlot = 700
+        ptIdx = round(seq(1,chainLength,length=nToPlot))
+        plot ( mcmcMat[ptIdx,parName2] , mcmcMat[ptIdx,parName1] , cex.lab=1.75 ,
+               xlab=parName2 , ylab=parName1 , col="skyblue" )
+      } else if ( t1Idx == t2Idx ) {
+        par( mar=c(3.5,1,1,1) , mgp=c(2.0,0.7,0) )
+        postInfo = plotPost( mcmcMat[,parName1] , cex.lab = 1.75 , 
+                             compVal=compVal , ROPE=rope , cex.main=1.5 ,
+                             xlab=parName1 , main="" )
+        includeRows = ( s == t1Idx ) # identify rows of this subject in data
+        dataPropor = sum(y[includeRows])/sum(includeRows) 
+        points( dataPropor , 0 , pch="+" , col="red" , cex=3 )
+      } else if ( t1Idx < t2Idx ) {
+        par( mar=c(3.5,1,1,1) , mgp=c(2.0,0.7,0) )
+        postInfo = plotPost(mcmcMat[,parName1]-mcmcMat[,parName2] , cex.lab = 1.75 , 
+                           compVal=compValDiff , ROPE=ropeDiff , cex.main=1.5 ,
+                           xlab=paste0(parName1,"-",parName2) , main="" )
+        includeRows1 = ( s == t1Idx ) # identify rows of this subject in data
+        dataPropor1 = sum(y[includeRows1])/sum(includeRows1) 
+        includeRows2 = ( s == t2Idx ) # identify rows of this subject in data
+        dataPropor2 = sum(y[includeRows2])/sum(includeRows2) 
+        points( dataPropor1-dataPropor2 , 0 , pch="+" , col="red" , cex=3 )
+      }
+    }
+  }
+  #-----------------------------------------------------------------------------  
+  if ( !is.null(saveName) ) {
+    saveGraph( file=paste(saveName,"Post",sep=""), type=saveType)
+  }
+}
+
+#===============================================================================
+
+```
+
+
+Although JAGS can automatically start the MCMC chains at default values, the efficiency of the MCMC process can sometimes be improved if we intelligently provide reasonable starting values to JAGS. Generally, a useful choice for initial values of the parameters is their maximum likelihood estimate (MLE).
+
+In this question we are supposed to omit the inits argument entirely so that JAGS would create its own
+initial values for the chains.
+
+```{r}
+source("Jags-Ydich-XnomSsubj-MbernBeta-Example.R")
+```
+![Without Inits](5BPost.png)
+
+![With Inits](5B_initsPost.png)
+No, MCMC output did not change in a systematic way, other than MCMC sampling noise. In fact the HDI (95 percent) for both theta1 and theta2 are almost the same.

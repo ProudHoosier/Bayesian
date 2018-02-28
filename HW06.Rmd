@@ -1,0 +1,211 @@
+---
+title: "HW06.Rmd"
+author: "Shashi"
+date: "February 19, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I have executed these exercises on my own and written the answers in my own words. Signed: Shashi Shankar
+
+## 1A.
+
+```{r}
+source("Jags-Ydich-Xnom1subj-MbernBetaModelComp.R")
+```
+
+![](Jags-Ydich-Xnom1subj-MbernBetaModelComp1A-Post.png)
+
+Ran the script without the data i.e. y coomented in the model specification and got the prior as shown in the figure above.
+
+## 1B.
+
+```{r}
+source("Jags-Ydich-Xnom1subj-MbernBetaModelComp.R")
+```
+
+![](Jags-Ydich-Xnom1subj-MbernBetaModelComp1B-Post.png)
+
+Model with index=2 is highly prefered over model 1 by 0.666. The 95% HDI on the theta value in the biased-factory model (i.e., in m=2) lies between 0.57 and 0.887. And It is evident from the above posterior that theta value of 0.5 is clearly excluded.
+
+## 1C.
+```{r}
+source("Jags-Ydich-Xnom1subj-MbernBetaModelComp.R")
+```
+
+![](Jags-Ydich-Xnom1subj-MbernBetaModelComp1C-Post.png)
+
+Now with the new data (N=16 and z=8), model with index 1 is preferred over model 2 by 0.510. 95% HDI on the theta value in the biased-factory model (i.e., in m=2) lies between 0.408 and 0.762. It does include a theta value of 0.5 with reasonable credibility in fact.
+
+## 2A.
+
+```{r}
+# Data:
+N = 45 ; z = 3
+# p(y=1):
+theta = 1/6
+low_Tail= 0:z
+# calculates Cumulative low tail probability given by equation 11.5 in the book:
+lowTailProba = sum( choose(N,low_Tail) * theta^low_Tail * (1-theta)^(N-low_Tail) )
+# Two tail probability:
+TwoTailPval = 2 * lowTailProba
+show( TwoTailPval )
+```
+
+It considered the low tail and not the high tail because z/N = 3/45 is less than expected p = 1/6.
+We can not reject the hypothesis that theta=1/6 as the the two-tailed p value is 0.089, which is greater than .05.
+
+
+## 2B.
+```{r}
+complN = z:(N-1)
+# calculates Cumulative low tail probability given by equation 11.6 in the book:
+complP = sum( (z/complN) * choose(complN,z) * theta^z * (1-theta)^(complN-z) )
+lowTailProba = 1-complP
+# Two tail probability:
+TwoTailPval = 2 * lowTailProba
+show( TwoTailPval )
+```
+
+Cumulative low tail probability is given by negative binomial. In this case, the tail is over n>=N, which can be easily computed by using the finite complement to its right i.e. 1 - p(n<N).
+Here we can reject the hypothesis that theta=1/6 because TwoTailProba is 0.0312 which is less than 0.05
+
+## 3A.
+
+```{r}
+N = 45 ; z = 3
+theta = 1/6 
+# z/N = 3/45 = 0.066
+# Computing the left-tail p value For each candidate theta values from 0.170 to 0.190 with a step size of 0.001, which are greater than z/N observed 
+lowTailZ = 0:z
+for ( theta in seq( 0.170 , 0.190 , 0.001) ) {
+  show( c(theta , 2*sum( choose(N,lowTailZ) * theta^lowTailZ * (1-theta)^(N-lowTailZ) ) ) )
+}
+```
+
+The highest theta value which can not be rejected is 0.182.
+
+Similarly 2nd script computes the right-tail p value for candidate theta values from 0.005 to 0.020 with step size of 0.001, which are less than z/N observed.
+
+```{r}
+# The columns are theta and p value:
+# For candidate theta values from 0.005 to 0.020, which are less than z/N observed, # compute the right-tail p value:
+highTailZ = z:N
+for ( theta in seq( 0.005 , 0.020 , 0.001) ) {
+show( c(
+theta ,
+2*sum( choose(N,highTailZ) * theta^highTailZ * (1-theta)^(N-highTailZ) )
+))
+}
+# The columns are theta and p value:
+```
+
+The lowest theta that can not be rejected is 0.014. 
+
+Confidence Interval is in between 0.014 and 0.182. It is the range of theta values not rejected when the stopping intention is fixed N.
+
+## 3B.
+
+```{r}
+# Compute the left tailed p value.
+# For candidate theta values between 0.15 and 0.16 with step size of 0.001, greater than z/N observed, 
+complN = z:(N-1)
+for ( theta in seq( 0.150 , 0.160 , 0.001) ) {
+show( c(theta, 2*(1-sum( (z/complN) * choose(complN,z) * theta^z * (1-theta)^(complN-z) ) ) ) )
+}
+```
+The highest theta value which can not be rejected is 0.154.
+
+```{r}
+# For candidate theta values LESS than z/N observed, compute the RIGHT-tail p
+# value: > 
+highTailN = z:N # Notice N not N-1
+for ( theta in seq( 0.005 , 0.020 , 0.001) ) {
+ show( c(theta , 2*sum( (z/highTailN) * choose(highTailN,z) * theta^z * (1-theta)^(highTailN-z) ) ) )
+}
+```
+
+The lowest theta value which can not be rejected is 0.14.
+
+Thus, when the stopping at fixed z, the confidence interval goes from 0.014 to 0.154. Confidence Interval is very different from previous scenario where we stopped at fixed N.
+
+## 4.
+
+```{r}
+# Given Data:
+N = 45 ; z = 3
+# Hypothetical value of parameter theta
+theta = 1/6 
+# Fixed duration rolling of N=40 to 50 with equal probability
+Nposs = 40:50 
+# Specify probability of each N (all with equal probability): 
+Nprob = rep(1, length(Nposs)) 
+# Normalized to get actual probability mass.
+Nprob = Nprob/sum(Nprob) 
+# Initialize total tail probability to zero.
+totalP = 0 
+# For each N, computing the p value, and accumulate the weighted total p:
+for ( i in 1:length(Nposs) ) 
+{ 
+thisN = Nposs[i]  
+# For this N, determine the max z that is in the low tail. 
+# It must satisfy thisZ/thisN <= z/N.
+thisZ = max( (0:thisN)[ (0:thisN)/thisN <= z/N ] ) 
+# Sum of binomial probabilities from z/N to zero.
+lowTailZ = 0:thisZ
+thisP = 2*sum(choose(thisN,lowTailZ) * theta^lowTailZ * (1-theta)^(thisN-lowTailZ) ) 
+# Calculating the weighted average now
+totalP = totalP + Nprob[i] * thisP 
+# Print P value during the fixed duration:
+show( c( thisN , thisP ) )
+}
+
+show( totalP )
+```
+
+P value for the observed outcome is 0.055 This p value is not the same as that of fixed N or fixed Z.
+
+Above script caluclates the average of P value for each possible N weighted by probability that that would happen.
+
+## 5.
+
+```{r}
+# Given Data:
+N = 45 ; z = 3
+# Hypothetical value of parameter theta
+theta = 1/6 
+# Fixed duration rolling of N=40 to 50 with equal probability
+Nposs = 35:45 
+# Specify probability of each N (all with equal probability): 
+Nprob = rep(1, length(Nposs)) 
+# Normalized to get actual probability mass.
+Nprob = Nprob/sum(Nprob) 
+# Initialize total tail probability to zero.
+totalP = 0 
+# For each N, computing the p value, and accumulate the weighted total p:
+for ( i in 1:length(Nposs) ) 
+{ 
+thisN = Nposs[i]  
+# For this N, determine the max z that is in the low tail. 
+# It must satisfy thisZ/thisN <= z/N.
+thisZ = max( (0:thisN)[ (0:thisN)/thisN <= z/N ] ) 
+# Sum of binomial probabilities from z/N to zero.
+lowTailZ = 0:thisZ
+thisP = 2*sum(choose(thisN,lowTailZ) * theta^lowTailZ * (1-theta)^(thisN-lowTailZ) ) 
+# Calculating the weighted average now
+totalP = totalP + Nprob[i] * thisP 
+# Print P value during the fixed duration:
+show( c( thisN , thisP ) )
+}
+
+show( totalP )
+```
+
+P value depends on the sampling scheme when sampling for a fixed duration. When the roller could have rolled N=35, N=36, N=37, ., N=45 with equal probabilities, P value changed to 0.065.
+
+
